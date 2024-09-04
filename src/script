@@ -17,21 +17,26 @@ $(document).on("click", "#resetAll", function() {
 //END RESET LOCAL STORAGE
 
 //Set Game Variables
-var NumPlots = 0; //a reset for the number of plots a user has
-var Money = 160; //the amount of money to start
-var PlotCost = 100; //Cost of a Plot of land
+var NumShoes= 0; //a reset for the number of plots a user has ordered
+var Points = P1600; //the amount of money to start
+var ProductCost = P50; //Cost of Produt
+var OrderTime = 4*7*24*60*1000; // manufacturing time in milliseconds(4 weeks)
 
-var SeedCostT1 = 30; //Cost of seeds to plant
-var SeedCostT2 = 50; //Cost of seeds to plant
-var SeedCostT3 = 120; //Cost of seeds to plant
 
-var counterLimitT1 = 32; //Time it takes to grow to corn \ MUST BE DIVISIBLE BY 4
-var counterLimitT2 = 64; //X amount of the counter limit for other crops
-var counterLimitT3 = 120; //X amount of the counter limit for other crops
+var SpeedUpCost1 = P500; //Points required to reduce time by 1 week
+var SpeedUpCost2 = P1000;//Points required to reduce time by 2 weeks
 
-var ProfitT1 = 55; //Profit per harvest
-var ProfitT2 = 95; //Profit modifier for other crops
-var ProfitT3 = 180; //Profit modifier for other crops
+var counterLimitT1 = 32; //Time it takes Shoe to develop \ MUST BE DIVISIBLE BY 4
+var counterLimitT2 = 64; //X amount of the counter limit for other Shoes
+var counterLimitT3 = 120; //X amount of the counter limit for other shoes
+
+var ProductCost =P50;// Eg cost for the product
+
+
+var FactoryProfit = 150; //Profit from the purchased coop
+var PointsPerPurchase = P1;// 1 point earned per 10c spent in game or in store
+
+
 
 var coopProfit = 150; //Profit from the purchased coop
 
