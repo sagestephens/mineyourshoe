@@ -17,42 +17,45 @@ $(document).on("click", "#resetAll", function() {
 //END RESET LOCAL STORAGE
 
 //Set Game Variables
-var NumPlots = 0; //a reset for the number of plots a user has
-var Money = 160; //the amount of money to start
-var PlotCost = 100; //Cost of a Plot of land
+var NumShoes = 0; // The number of products/orders
+var Points = 1600; // The starting amount of points
+var PlotCost = 100; // Cost to speed up manufacturing
 
-var SeedCostT1 = 30; //Cost of seeds to plant
-var SeedCostT2 = 50; //Cost of seeds to plant
-var SeedCostT3 = 120; //Cost of seeds to plant
+// Time Reduction
+var TimeReduction500Points = 1; // 1 week reduction for 500 points
+var TimeReduction1000Points = 2; // 2 weeks reduction for 1000 points
 
-var counterLimitT1 = 32; //Time it takes to grow to corn \ MUST BE DIVISIBLE BY 4
-var counterLimitT2 = 64; //X amount of the counter limit for other crops
-var counterLimitT3 = 120; //X amount of the counter limit for other crops
+// Time Constants
+var StandardManufacturingTime = 4; // weeks
 
-var ProfitT1 = 55; //Profit per harvest
-var ProfitT2 = 95; //Profit modifier for other crops
-var ProfitT3 = 180; //Profit modifier for other crops
+//var counterLimitT1 = 32; //Time it takes to grow to corn \ MUST BE DIVISIBLE BY 4
+//var counterLimitT2 = 64; //X amount of the counter limit for other crops
+//var counterLimitT3 = 120; //X amount of the counter limit for other crops
 
-var coopProfit = 150; //Profit from the purchased coop
+//var ProfitT1 = 55; //Profit per harvest
+//var ProfitT2 = 95; //Profit modifier for other crops
+//var ProfitT3 = 180; //Profit modifier for other crops
 
-//Get DOM elements
-var cropChooserWrapper = $("#cropChooserWrapper");
-var cropChooserOptions = $("#cropChooserWrapper > .footer > .crop-type-option");
-var plotWrapper = $("#plotWrapper");
-var plot = $(".plotBox");
-var MoneyBox = $("#moneyBox");
-var MoneyBoxMessage = $("#MoneyBoxMessage");
+//var coopProfit = 150; //Profit from the purchased coop
+
+// Get DOM elements
+var productChooserWrapper = $("#productChooserWrapper");
+var productOptions = $("#productChooserWrapper > .footer > .product-type-option");
+var manufacturingWrapper = $("#manufacturingWrapper");
+var manufacturingSlot = $(".manufacturingSlot");
+var PointsBox = $("#pointsBox");
+var PointsBoxMessage = $("#PointsBoxMessage");
 var BottomMessageUI = $("#UIMessageWrapper");
 var ConfirmWrapper = $("#ConfirmWrapper");
 var ConfirmWrapperOptions = $("#ConfirmWrapper > .buttons > .button");
 var tutorialFloaty = $("#tutorialFloat");
-var seedSelection = ".seed-selection";
+var ItemSelection = ".ItemSelection-selection";
 
-//Purchase Coop
-var coopBuyOption = $("#CoopBuyOption");
-var coopBuyOptions = $("#CoopExpansionWrapper > .buttons > .button");
-var CoopExpansionWrapper = $("#CoopExpansionWrapper");
-var Coop = $("#Coop");
+//Purchase 
+//var coopBuyOption = $("#CoopBuyOption");
+//var coopBuyOptions = $("#CoopExpansionWrapper > .buttons > .button");
+//var CoopExpansionWrapper = $("#CoopExpansionWrapper");
+//var Coop = $("#Coop");
 
 //Grab code for spaner plots & remove when done
 var spawnSavedPlot = $(".plotBoxSaved").html();
