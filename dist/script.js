@@ -1,4 +1,4 @@
-//GameSounds
+// Game Sounds
 function playHarvestSound() {
   var audio = document.getElementById("harvestSound");
   audio.play();
@@ -8,13 +8,6 @@ function playPlantSound() {
   var audio = document.getElementById("plantSound");
   audio.play();
 }
-
-//RESET LOCAL STORAGE
-$(document).on("click", "#resetAll", function() {
-  localStorage.clear();
-  console.log("All LocalStorage Items Clear");
-});
-//END RESET LOCAL STORAGE
 
 //Set Game Variables
 var NumShoes = 0; // The number of products/orders
@@ -27,16 +20,6 @@ var TimeReduction1000Points = 2; // 2 weeks reduction for 1000 points
 
 // Time Constants
 var StandardManufacturingTime = 4; // weeks
-
-//var counterLimitT1 = 32; //Time it takes to grow to corn \ MUST BE DIVISIBLE BY 4
-//var counterLimitT2 = 64; //X amount of the counter limit for other crops
-//var counterLimitT3 = 120; //X amount of the counter limit for other crops
-
-//var ProfitT1 = 55; //Profit per harvest
-//var ProfitT2 = 95; //Profit modifier for other crops
-//var ProfitT3 = 180; //Profit modifier for other crops
-
-//var coopProfit = 150; //Profit from the purchased coop
 
 // Get DOM elements
 var productChooserWrapper = $("#productChooserWrapper");
@@ -51,534 +34,124 @@ var ConfirmWrapperOptions = $("#ConfirmWrapper > .buttons > .button");
 var tutorialFloaty = $("#tutorialFloat");
 var ItemSelection = ".ItemSelection-selection";
 
-//Purchase 
-//var coopBuyOption = $("#CoopBuyOption");
-//var coopBuyOptions = $("#CoopExpansionWrapper > .buttons > .button");
-//var CoopExpansionWrapper = $("#CoopExpansionWrapper");
-//var Coop = $("#Coop");
+// Remove reset button
 
-//Grab code for spaner plots & remove when done
-var spawnSavedPlot = $(".plotBoxSaved").html();
-$(".plotBoxSaved").remove();
-//Grab code for new plot
-var spawnNewPlot = $("<div />")
-  .append($(".plotBox").clone())
-  .html();
 
-//LOCAL STORAGE VARIABLES
-//NUMBER OF PRE-PURCHASED PLOTS
+// Set Points and Factory from storage
 var NumPlotsFromStorage = localStorage.getItem("NumPlots");
 if (NumPlotsFromStorage == null || NumPlotsFromStorage == "NaN") {
-  //if no saved plots then reset to variable
   NumPlots = NumPlots;
 } else {
-  //otherwise set the number to what is in storage
   NumPlots = parseInt(NumPlotsFromStorage);
 }
-console.log("you have " + NumPlots + " purchased plots");
+console.log("You have " + NumPlots + " purchased plots");
 
-//AMOUNT OF MONEY
-var MoneyFromStorage = localStorage.getItem("NumMoney");
-if (MoneyFromStorage == null || MoneyFromStorage == "NaN") {
-  //same as above
-  Money = Money;
+var PointsFromStorage = localStorage.getItem("NumPoints");
+if (PointsFromStorage == null || PointsFromStorage == "NaN") {
+  Points = Points;
 } else {
-  //same as above
-  Money = parseInt(MoneyFromStorage);
+  Points = parseInt(PointsFromStorage);
 }
-console.log("you have $" + Money);
+console.log("You have " + Points + " points");
 
-//SET STUFF
-$("#moneyBox").html(Money);
+$("#pointsBox").html(Points);
 
-//GET COOP INFO
-var CoopFromStorage = localStorage.getItem("CoopPurchased");
-if (CoopFromStorage == null || CoopFromStorage == "NaN") {
-  //same as above
-  //Money = Money;
-  console.log("you don't own the coop!");
-} else if (CoopFromStorage == "true") {
-  //Show the Coop
-  showTheCoop();
-  //Start the Counter
-  runTheCoop();
-  //Update Money Stuff
-  disableCoopPurchase();
-  console.log("you own the coop!");
-} else if (CoopFromStorage == "false") {
-  console.log("you don't own the coop!");
+// Get Factory info
+var FactoryFromStorage = localStorage.getItem("FactoryPurchased");
+if (FactoryFromStorage == null || FactoryFromStorage == "NaN") {
+  console.log("You don't own the factory!");
+} else if (FactoryFromStorage == "true") {
+  showTheFactory();
+  runTheFactory();
+  disableFactoryPurchase();
+  console.log("You own the factory!");
+} else {
+  console.log("You don't own the factory!");
 }
 
-//SET STUFF
-$("#moneyBox").html(Money);
+// Set HTML for product types
+productChooserWrapper.find(".corn").find(".cost").html("Cost: " + SeedCostT1 + " points");
+productChooserWrapper.find(".corn").find(".time").html("Time: " + counterLimitT1 + "s");
+productChooserWrapper.find(".corn").find(".profit").html("Profit: " + ProfitT1 + " points");
 
-//Set HTML on starting elements (cost, time, and profit)
-cropChooserWrapper
-  .find(".corn")
-  .find(".cost")
-  .html("Cost: $" + SeedCostT1);
-cropChooserWrapper
-  .find(".corn")
-  .find(".time")
-  .html("Time: " + counterLimitT1 + "s");
-cropChooserWrapper
-  .find(".corn")
-  .find(".profit")
-  .html("Profit: $" + ProfitT1);
+productChooserWrapper.find(".blueberry").find(".cost").html("Cost: " + SeedCostT2 + " points");
+productChooserWrapper.find(".blueberry").find(".time").html("Time: " + counterLimitT2 + "s");
+productChooserWrapper.find(".blueberry").find(".profit").html("Profit: " + ProfitT2 + " points");
 
-cropChooserWrapper
-  .find(".blueberry")
-  .find(".cost")
-  .html("Cost: $" + SeedCostT2);
-cropChooserWrapper
-  .find(".blueberry")
-  .find(".time")
-  .html("Time: " + counterLimitT2 + "s");
-cropChooserWrapper
-  .find(".blueberry")
-  .find(".profit")
-  .html("Profit: $" + ProfitT2);
+productChooserWrapper.find(".watermelon").find(".cost").html("Cost: " + SeedCostT3 + " points");
+productChooserWrapper.find(".watermelon").find(".time").html("Time: " + counterLimitT3 + "s");
+productChooserWrapper.find(".watermelon").find(".profit").html("Profit: " + ProfitT3 + " points");
 
-cropChooserWrapper
-  .find(".watermelon")
-  .find(".cost")
-  .html("Cost: $" + SeedCostT3);
-cropChooserWrapper
-  .find(".watermelon")
-  .find(".time")
-  .html("Time: " + counterLimitT3 + "s");
-cropChooserWrapper
-  .find(".watermelon")
-  .find(".profit")
-  .html("Profit: $" + ProfitT3);
-
-//CREATE SAVED PLOTS
+// Create saved plots
 function spawnSavedPlots() {
-  var reqPlotsForSpawn = NumPlots; //get number of plots minus 1
+  var reqPlotsForSpawn = NumPlots;
   if (reqPlotsForSpawn >= 1 && NumPlots <= 16) {
-    //if 1 or more AND less than 16 then spawn purchased plots
-    //console.log("you have enough plots to spawn");
     plot.remove();
-    tutorialFloaty.hide(); //hide tutorial if player has already played the game
+    tutorialFloaty.hide();
     for (var i = 0; i < NumPlots; i++) {
-      plotWrapper.append(spawnSavedPlot); //add the plots the user owns
-      //console.log("1 plot appended");
+      plotWrapper.append(spawnSavedPlot);
     }
-  } else {
-    //console.log("NOTHING was spawned");
   }
-  //plotWrapper.append(spawnNewPlot);
 }
 spawnSavedPlots();
 makePlotAvailable();
-//END CREATE SAVED PLOTS
 
-//RUN STUFF
-//TURN OFF TUTORIAL
-$(document).on("click", ".tutorialOne", function() {
-  tutorialFloaty.fadeOut();
-  $(this).removeClass("tutorialOne");
-});
-//END TURN OFF TUTORIAL
-
-$("#closeChooser").click(function() {
-  hideSeedSelectionMenu();
-});
-
-$("#closeConfirm").click(function() {
-  hideConfirmMenu();
-});
-
-$("#closeCoopConfirm").click(function() {
-  hideCoopMenu();
-});
-
-var currentPlot = "";
-
-//CLICK ON A PLOT
+// Clicking on a plot
 $(document).on("click", ".plotBox", function(event) {
-  //console.log("clicked on plot");
   if ($(this).hasClass("available")) {
-    //IF PLOT IS AVAILABLE
     currentPlot = $(this);
     hideConfirmMenu();
-    function HideShowConfirmMenu() {
-      showConfirmMenu();
-    }
-    // use setTimeout() to execute
-    setTimeout(HideShowConfirmMenu, 100);
-    //convertPlot($(this));
-    //makePlotAvailable();
-    //IF PLOT IS READY TO HARVEST
+    setTimeout(showConfirmMenu, 100);
   } else if ($(this).hasClass("ready-to-harvest")) {
-    //IF PLOT IS SEEDED
     var cropType = checkCropType($(this));
     harvestPlot($(this), cropType);
   } else if ($(this).hasClass("ready")) {
     hideSeedSelectionMenu();
-    function HideShowSelectionMenu() {
+    setTimeout(function() {
       showSeedSelectionMenu();
       playPlantSound();
-    }
-    // use setTimeout() to execute
-    setTimeout(HideShowSelectionMenu, 100);
-
-    //setUpSeed($(this));
+    }, 100);
     currentPlot = $(this);
-  } else {
-    //do nothing
   }
 });
 
-function checkCropType(plotInfo) {
-  var cropType = "";
-  if (plotInfo.hasClass("corn")) {
-    return "corn";
-  } else if (plotInfo.hasClass("blueberry")) {
-    return "blueberry";
-  } else if (plotInfo.hasClass("watermelon")) {
-    return "watermelon";
-  } else {
-    return "none";
-  }
-}
-
-function checkCropCost(plotType) {
-  if (plotType == "corn") {
-    return SeedCostT1;
-    //console.log("crop is type corn and the cost is: " + SeedCost);
-  } else if (plotType == "blueberry") {
-    return SeedCostT2;
-    //console.log("crop is type strawberry and the cost is: " + SeedCost * SeedCostModifier);
-  } else if (plotType == "watermelon") {
-    return SeedCostT3;
-    //console.log("crop is type blueberry and the cost is: " + SeedCost * SeedCostModifier);
-  } else {
-    //do nothing
-  }
-}
-
-function checkCropProfit(plotType) {
-  if (plotType == "corn") {
-    return ProfitT1;
-  } else if (plotType == "blueberry") {
-    return ProfitT2;
-  } else if (plotType == "watermelon") {
-    return ProfitT3;
-  } else {
-    //do nothing
-  }
-}
-
-function checkCropTimerLimit(plotType) {
-  if (plotType == "corn") {
-    return counterLimitT1;
-    //console.log("plot type is corn");
-  } else if (plotType == "blueberry") {
-    return counterLimitT2;
-    //console.log("plot type is blueberry");
-  } else if (plotType == "watermelon") {
-    return counterLimitT3;
-    //console.log("plot type is watermelon");
-  } else {
-    //do nothing
-  }
-}
-
-//PLANT SEED NEW
-cropChooserOptions.click(function() {
-  var cropType = "";
-  cropType = $(this)
-    .attr("class")
-    .split(" ")
-    .pop();
-  console.log("crop type is " + cropType);
-  //Add seed type to parent when planting seed for first time
-  currentPlot.addClass(cropType);
-  //Get cost of Crop based on type
-  var cropCostLocal = checkCropCost(cropType);
-  //console.log("this crop will cost you $" + cropCostLocal);
-  //Actually plant the seed
-  plantSeed(currentPlot, cropType, cropCostLocal);
-});
-
-//Click on yes or no option to purchase plot
-ConfirmWrapperOptions.click(function() {
-  //console.log($(this));
-  if ($(this).hasClass("yes")) {
-    convertPlot(currentPlot);
-    makePlotAvailable();
-    hideConfirmMenu();
-  } else if ($(this).hasClass("no")) {
-    hideConfirmMenu();
-  } else {
-  }
-});
-
-//Function that plants the seed after getting and setting variables
-function plantSeed(plotInfo, plotType, cropCost) {
-  console.log("You have: $" + Money);
-  if (Money >= cropCost) {    
-    var cropType = plotType;
-    plotInfo.removeClass("plot");
-    plotInfo.removeClass("ready");
-    plotInfo.addClass("seed-" + cropType);
-
-    console.log("This crop cost you: $" + cropCost);
-    Money = Money - cropCost;
-    console.log("You now have: $" + Money + "left");
-    MoneyBox.html(Money);
-    startPlotTimer(plotInfo, cropType);
-    hideSeedSelectionMenu();
-  } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
-    animateBottomUITooltip();
-  }
-} //END PLANT SEED
-
-//MAKES A PLOT AVAILABLE TO USE IF CONDITIONS MET
-function makePlotAvailable() {
-  var NumPlotsAvail = $("#plotWrapper > .available").length;
-  var NumPlotCurrent = $("#plotWrapper > .plotBox").length;
-  //console.log(NumPlotsAvail);
-  if (Money >= PlotCost && NumPlotsAvail == 0 && NumPlotCurrent <= 15) {
-    plotWrapper.append(spawnNewPlot);
-    //console.log(spawnNewPlot);
-    console.log("a new plot has been added");
-  } else {
-    //Do Nothing
-    console.log("needs more money to spawn new plot");
-  }
-}
-
-//Converts plot from available to harvestable
-function convertPlot(plotInfo) {
-  if (Money >= PlotCost) {
-    plotInfo.removeClass("available").addClass("plot ready");
-    Money = Money - PlotCost;
-    SaveMoneyAmmount(Money);
-    MoneyBox.html(Money);
-    MoneyBoxMessage.html("-$" + PlotCost);
-    console.log("> you have used $" + PlotCost);
-    console.log(">> you have purchased a plot");
-    SaveNumPlots();
-    animateMoneyTooltip();
-    plotInfo.attr("title", "Ready for Planting!");
-  } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
-    animateBottomUITooltip();
-  }
-}
-
-//HARVEST PLOT
-function harvestPlot(plotInfo, plotType) {
-  playHarvestSound();
-  console.log("Prior to harvest you have $" + Money);
-  var localProfit = 0;
-
-  localProfit = checkCropProfit(plotType);
-
-  //console.log("This Has A Grown Crop!");
-  plotInfo.removeClass();
-  plotInfo.addClass("plotBox plot ready");
-  //animateBottomUITooltip();
-  //MAKE MONEY
-  Money = Money + localProfit;
-  SaveMoneyAmmount(Money);
-  MoneyBox.html(Money);
-  console.log("> you have made $" + localProfit);
-  MoneyBoxMessage.html("+ $" + localProfit);
-  console.log("after harvest you now have: $" + Money);
-  animateMoneyTooltip();
-  makePlotAvailable();
-  plotInfo.attr("title", "Ready for Planting!");
-  //console.log("new plot has spawned");
-} //END HARVEST PLOT
-
-//PLOT TIMER
-function startPlotTimer(plotInfo, plotType) {
-  var counter = 0;
-  var counterFraction = 4;
-  var plotTypeFinal = plotType;
-  var localCounterLimit = 0;
-
-  localCounterLimit = checkCropTimerLimit(plotType);
-
-  var interval = setInterval(function() {
-    plotInfo.removeClass("plot");
-    plotInfo.attr(
-      "title",
-      Math.abs(counter - localCounterLimit) + " Seconds until ready."
-    );
-    counter++;
-    var counterFractioned = localCounterLimit / counterFraction;
-    //console.log(counterFractioned);
-    //console.log(counter);
-
-    if (counter == counterFractioned * 1) {
-      plotInfo
-        .removeClass("seed-" + plotTypeFinal)
-        .addClass("seedling-" + plotTypeFinal);
-    } else if (counter == counterFractioned * 2) {
-      plotInfo
-        .removeClass("seedling-" + plotTypeFinal)
-        .addClass("adolescent-" + plotTypeFinal);
-    } else if (counter == counterFractioned * 3) {
-      plotInfo
-        .removeClass("adolescent-" + plotTypeFinal)
-        .addClass("mature-" + plotTypeFinal);
-    } else if (counter == localCounterLimit) {
-      plotInfo
-        .removeClass("mature-" + plotTypeFinal)
-        .addClass("ready-to-harvest adult-" + plotTypeFinal);
-      //BottomMessageUI.html("Ready to Harvest!");
-      plotInfo.attr("title", "Ready to Harvest!");
-      clearInterval(interval);
-    } else {
-      //do nothing
-    }
-  }, 1000);
-} //PLOT TIMER
-
-//ANIMATE THE MONEY TIP
-function animateMoneyTooltip() {
-  MoneyBoxMessage.animate(
-    {
-      opacity: "1",
-      bottom: "-20px"
-    },
-    500,
-    function() {
-      MoneyBoxMessage.animate({
-        opacity: "0",
-        bottom: "-30px"
-      });
-    }
-  );
-}
-
-//ANIMATE THE BOTTOM MESSAGE TIP
-function animateBottomUITooltip() {
-  BottomMessageUI.animate(
-    {
-      opacity: "1"
-    },
-    1000,
-    "linear",
-    function() {
-      BottomMessageUI.animate({
-        opacity: "0"
-      });
-    }
-  );
-}
-
-function showSeedSelectionMenu() {
-  cropChooserWrapper.addClass("show");
-  cropChooserWrapper.find(".crop-type-option").addClass("hide");
-  if (Money >= SeedCostT3) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-    cropChooserWrapper.find(".blueberry").removeClass("hide");
-    cropChooserWrapper.find(".watermelon").removeClass("hide");
-  } else if (Money >= SeedCostT2) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-    cropChooserWrapper.find(".blueberry").removeClass("hide");
-    //cropChooserWrapper.find(".watermelon").removeClass("hide");
-  } else if (Money >= SeedCostT1) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-  }
-}
-
-function hideSeedSelectionMenu() {
-  cropChooserWrapper.removeClass("show");
-}
-
-function showConfirmMenu() {
-  ConfirmWrapper.addClass("show");
-}
-
-function hideConfirmMenu() {
-  ConfirmWrapper.removeClass("show");
-}
-
-//Save Plots as they are purchased
-function SaveNumPlots() {
-  NumPlots = NumPlots + 1;
-  localStorage.setItem("NumPlots", NumPlots);
-  //console.log("You have " + NumPlots + " purchased plots");
-}
-
-//Save Money as it is purchased
-function SaveMoneyAmmount(moneyAmount) {
-  localStorage.setItem("NumMoney", moneyAmount);
-  //console.log("You have $" + moneyAmount);
-}
-
-//Show Coop Buy Option
-function showCoopMenu() {
-  CoopExpansionWrapper.addClass("show");
-}
-//Hide Coop Buy Option
-function hideCoopMenu() {
-  CoopExpansionWrapper.removeClass("show");
-}
-
-//Trigger Coop Buy Option
+// Purchase Factory
 coopBuyOption.click(function() {
-  showCoopMenu();
+  showFactoryMenu();
 });
 
-//Buy The Coop
-coopBuyOptions.click(function() {
-  if ($(this).hasClass("yes")) {
-    buyTheCoop();
-    hideCoopMenu();
-  } else if ($(this).hasClass("no")) {
-    hideCoopMenu();
+function buyTheFactory() {
+  if (Points >= 10000) {
+    showTheFactory();
+    runTheFactory();
+    Points = Points - 10000;
+    SavePointsAmount(Points);
+    PointsBox.html(Points);
+    PointsBoxMessage.html("- 10,000 points");
+    animatePointsTooltip();
+    localStorage.setItem("FactoryPurchased", true);
+    disableFactoryPurchase();
   } else {
-  }
-});
-
-function buyTheCoop() {
-  if (Money >= 10000) {
-    //Show the Coop
-    showTheCoop();
-    //Start the Counter
-    runTheCoop();
-    //Update Money Stuff
-    Money = Money - 10000;
-    SaveMoneyAmmount(Money);
-    MoneyBox.html(Money);
-    MoneyBoxMessage.html("- $" + 10000);
-    console.log("You Have Used: $10,000");
-    console.log("You now own the Coop!");
-    animateMoneyTooltip();
-    //Save Local Storage Boolean
-    localStorage.setItem("CoopPurchased", true);
-    disableCoopPurchase();
-  } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
+    console.log("You don't have enough points!");
+    BottomMessageUI.html("You don't have enough points!");
     animateBottomUITooltip();
   }
 }
 
-function runTheCoop() {
+function runTheFactory() {
   setInterval(function() {
-    Money = Money + coopProfit;
-    MoneyBox.html(Money);
-    MoneyBoxMessage.html("+ $" + coopProfit);
-    console.log("You Have Made: " + coopProfit + " from the Coop");
-    animateMoneyTooltip();
-  }, 60 * 1000); // 60 * 1000 milsec
+    Points = Points + factoryProfit;
+    PointsBox.html(Points);
+    PointsBoxMessage.html("+ " + factoryProfit + " points");
+    animatePointsTooltip();
+  }, 60 * 1000);
 }
 
-function showTheCoop() {
+function showTheFactory() {
   Coop.addClass("show");
 }
 
-function disableCoopPurchase() {
+function disableFactoryPurchase() {
   coopBuyOption.hide();
 }
+
