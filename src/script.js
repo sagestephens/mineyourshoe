@@ -83,7 +83,7 @@ if (MoneyFromStorage == null || MoneyFromStorage == "NaN") {
   //same as above
   Money = parseInt(MoneyFromStorage);
 }
-console.log("you have $" + Money);
+console.log("you have R" + Money);
 
 //SET STUFF
 $("#moneyBox").html(Money);
@@ -113,7 +113,7 @@ $("#moneyBox").html(Money);
 cropChooserWrapper
   .find(".corn")
   .find(".cost")
-  .html("Cost: $" + SeedCostT1);
+  .html("Cost: R" + SeedCostT1);
 cropChooserWrapper
   .find(".corn")
   .find(".time")
@@ -121,12 +121,12 @@ cropChooserWrapper
 cropChooserWrapper
   .find(".corn")
   .find(".profit")
-  .html("Profit: $" + ProfitT1);
+  .html("Profit: R" + ProfitT1);
 
 cropChooserWrapper
   .find(".blueberry")
   .find(".cost")
-  .html("Cost: $" + SeedCostT2);
+  .html("Cost: R" + SeedCostT2);
 cropChooserWrapper
   .find(".blueberry")
   .find(".time")
@@ -134,12 +134,12 @@ cropChooserWrapper
 cropChooserWrapper
   .find(".blueberry")
   .find(".profit")
-  .html("Profit: $" + ProfitT2);
+  .html("Profit: R" + ProfitT2);
 
 cropChooserWrapper
   .find(".watermelon")
   .find(".cost")
-  .html("Cost: $" + SeedCostT3);
+  .html("Cost: R" + SeedCostT3);
 cropChooserWrapper
   .find(".watermelon")
   .find(".time")
@@ -147,7 +147,7 @@ cropChooserWrapper
 cropChooserWrapper
   .find(".watermelon")
   .find(".profit")
-  .html("Profit: $" + ProfitT3);
+  .html("Profit: R" + ProfitT3);
 
 //CREATE SAVED PLOTS
 function spawnSavedPlots() {
@@ -267,315 +267,186 @@ function checkCropProfit(plotType) {
   }
 }
 
-function checkCropTimerLimit(plotType) {
+function checkPlotCounterLimit(plotType) {
   if (plotType == "corn") {
     return counterLimitT1;
-    //console.log("plot type is corn");
   } else if (plotType == "blueberry") {
     return counterLimitT2;
-    //console.log("plot type is blueberry");
   } else if (plotType == "watermelon") {
     return counterLimitT3;
-    //console.log("plot type is watermelon");
   } else {
     //do nothing
   }
 }
 
-//PLANT SEED NEW
-cropChooserOptions.click(function() {
-  var cropType = "";
-  cropType = $(this)
-    .attr("class")
-    .split(" ")
-    .pop();
-  console.log("crop type is " + cropType);
-  //Add seed type to parent when planting seed for first time
-  currentPlot.addClass(cropType);
-  //Get cost of Crop based on type
-  var cropCostLocal = checkCropCost(cropType);
-  //console.log("this crop will cost you $" + cropCostLocal);
-  //Actually plant the seed
-  plantSeed(currentPlot, cropType, cropCostLocal);
-});
-
-//Click on yes or no option to purchase plot
-ConfirmWrapperOptions.click(function() {
-  //console.log($(this));
-  if ($(this).hasClass("yes")) {
-    convertPlot(currentPlot);
-    makePlotAvailable();
-    hideConfirmMenu();
-  } else if ($(this).hasClass("no")) {
-    hideConfirmMenu();
-  } else {
-  }
-});
-
-//Function that plants the seed after getting and setting variables
-function plantSeed(plotInfo, plotType, cropCost) {
-  console.log("You have: $" + Money);
-  if (Money >= cropCost) {    
-    var cropType = plotType;
-    plotInfo.removeClass("plot");
-    plotInfo.removeClass("ready");
-    plotInfo.addClass("seed-" + cropType);
-
-    console.log("This crop cost you: $" + cropCost);
-    Money = Money - cropCost;
-    console.log("You now have: $" + Money + "left");
-    MoneyBox.html(Money);
-    startPlotTimer(plotInfo, cropType);
-    hideSeedSelectionMenu();
-  } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
-    animateBottomUITooltip();
-  }
-} //END PLANT SEED
-
-//MAKES A PLOT AVAILABLE TO USE IF CONDITIONS MET
-function makePlotAvailable() {
-  var NumPlotsAvail = $("#plotWrapper > .available").length;
-  var NumPlotCurrent = $("#plotWrapper > .plotBox").length;
-  //console.log(NumPlotsAvail);
-  if (Money >= PlotCost && NumPlotsAvail == 0 && NumPlotCurrent <= 15) {
-    plotWrapper.append(spawnNewPlot);
-    //console.log(spawnNewPlot);
-    console.log("a new plot has been added");
-  } else {
-    //Do Nothing
-    console.log("needs more money to spawn new plot");
-  }
+//RUN TIMER
+function setUpSeed(plot) {
+  //console.log("plot is ready");
+  plot.removeClass("ready");
+  plot.addClass("seeded");
+  startTimer(plot);
+  hideSeedSelectionMenu();
 }
 
-//Converts plot from available to harvestable
-function convertPlot(plotInfo) {
-  if (Money >= PlotCost) {
-    plotInfo.removeClass("available").addClass("plot ready");
-    Money = Money - PlotCost;
-    SaveMoneyAmmount(Money);
-    MoneyBox.html(Money);
-    MoneyBoxMessage.html("-$" + PlotCost);
-    console.log("> you have used $" + PlotCost);
-    console.log(">> you have purchased a plot");
-    SaveNumPlots();
-    animateMoneyTooltip();
-    plotInfo.attr("title", "Ready for Planting!");
-  } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
-    animateBottomUITooltip();
-  }
+function startTimer(plot) {
+  //console.log("Timer Started");
+  var cropType = checkCropType(plot);
+  var CounterLimit = checkPlotCounterLimit(cropType);
+  var CropProfit = checkCropProfit(cropType);
+  var Counter = 0;
+  var Timer = setInterval(function() {
+    Counter++;
+    plot.find(".crop-info").html(Counter);
+    if (Counter >= CounterLimit) {
+      //console.log("STOP TIMER");
+      clearInterval(Timer);
+      //console.log("TIMER STOPPED");
+      plot.removeClass("seeded");
+      plot.addClass("ready-to-harvest");
+      plot.find(".crop-info").html("Ready!");
+      //HARVEST THIS CROP & ADD TO BANK
+    }
+  }, 1000);
 }
 
 //HARVEST PLOT
-function harvestPlot(plotInfo, plotType) {
+function harvestPlot(plot, cropType) {
   playHarvestSound();
-  console.log("Prior to harvest you have $" + Money);
-  var localProfit = 0;
-
-  localProfit = checkCropProfit(plotType);
-
-  //console.log("This Has A Grown Crop!");
-  plotInfo.removeClass();
-  plotInfo.addClass("plotBox plot ready");
-  //animateBottomUITooltip();
-  //MAKE MONEY
-  Money = Money + localProfit;
-  SaveMoneyAmmount(Money);
+  var cropProfit = checkCropProfit(cropType);
+  Money += cropProfit;
   MoneyBox.html(Money);
-  console.log("> you have made $" + localProfit);
-  MoneyBoxMessage.html("+ $" + localProfit);
-  console.log("after harvest you now have: $" + Money);
-  animateMoneyTooltip();
-  makePlotAvailable();
-  plotInfo.attr("title", "Ready for Planting!");
-  //console.log("new plot has spawned");
-} //END HARVEST PLOT
+  MoneyBoxMessage.html("You made R" + cropProfit);
+  plot.removeClass("ready-to-harvest corn blueberry watermelon");
+  plot.addClass("ready");
+}
 
-//PLOT TIMER
-function startPlotTimer(plotInfo, plotType) {
-  var counter = 0;
-  var counterFraction = 4;
-  var plotTypeFinal = plotType;
-  var localCounterLimit = 0;
-
-  localCounterLimit = checkCropTimerLimit(plotType);
-
-  var interval = setInterval(function() {
-    plotInfo.removeClass("plot");
-    plotInfo.attr(
-      "title",
-      Math.abs(counter - localCounterLimit) + " Seconds until ready."
-    );
-    counter++;
-    var counterFractioned = localCounterLimit / counterFraction;
-    //console.log(counterFractioned);
-    //console.log(counter);
-
-    if (counter == counterFractioned * 1) {
-      plotInfo
-        .removeClass("seed-" + plotTypeFinal)
-        .addClass("seedling-" + plotTypeFinal);
-    } else if (counter == counterFractioned * 2) {
-      plotInfo
-        .removeClass("seedling-" + plotTypeFinal)
-        .addClass("adolescent-" + plotTypeFinal);
-    } else if (counter == counterFractioned * 3) {
-      plotInfo
-        .removeClass("adolescent-" + plotTypeFinal)
-        .addClass("mature-" + plotTypeFinal);
-    } else if (counter == localCounterLimit) {
-      plotInfo
-        .removeClass("mature-" + plotTypeFinal)
-        .addClass("ready-to-harvest adult-" + plotTypeFinal);
-      //BottomMessageUI.html("Ready to Harvest!");
-      plotInfo.attr("title", "Ready to Harvest!");
-      clearInterval(interval);
+//Purchase a Plot of land
+$("#purchasePlot").click(function() {
+  if (Money >= PlotCost) {
+    if (NumPlots < 16) {
+      Money -= PlotCost;
+      NumPlots++;
+      MoneyBox.html(Money);
+      MoneyBoxMessage.html("You purchased 1 plot of land for R" + PlotCost);
+      addPlot();
+      makePlotAvailable();
+      localStorage.setItem("NumMoney", Money);
+      localStorage.setItem("NumPlots", NumPlots);
     } else {
-      //do nothing
+      alert("You own all the land available!");
     }
-  }, 1000);
-} //PLOT TIMER
-
-//ANIMATE THE MONEY TIP
-function animateMoneyTooltip() {
-  MoneyBoxMessage.animate(
-    {
-      opacity: "1",
-      bottom: "-20px"
-    },
-    500,
-    function() {
-      MoneyBoxMessage.animate({
-        opacity: "0",
-        bottom: "-30px"
-      });
-    }
-  );
-}
-
-//ANIMATE THE BOTTOM MESSAGE TIP
-function animateBottomUITooltip() {
-  BottomMessageUI.animate(
-    {
-      opacity: "1"
-    },
-    1000,
-    "linear",
-    function() {
-      BottomMessageUI.animate({
-        opacity: "0"
-      });
-    }
-  );
-}
-
-function showSeedSelectionMenu() {
-  cropChooserWrapper.addClass("show");
-  cropChooserWrapper.find(".crop-type-option").addClass("hide");
-  if (Money >= SeedCostT3) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-    cropChooserWrapper.find(".blueberry").removeClass("hide");
-    cropChooserWrapper.find(".watermelon").removeClass("hide");
-  } else if (Money >= SeedCostT2) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-    cropChooserWrapper.find(".blueberry").removeClass("hide");
-    //cropChooserWrapper.find(".watermelon").removeClass("hide");
-  } else if (Money >= SeedCostT1) {
-    cropChooserWrapper.find(".corn").removeClass("hide");
-  }
-}
-
-function hideSeedSelectionMenu() {
-  cropChooserWrapper.removeClass("show");
-}
-
-function showConfirmMenu() {
-  ConfirmWrapper.addClass("show");
-}
-
-function hideConfirmMenu() {
-  ConfirmWrapper.removeClass("show");
-}
-
-//Save Plots as they are purchased
-function SaveNumPlots() {
-  NumPlots = NumPlots + 1;
-  localStorage.setItem("NumPlots", NumPlots);
-  //console.log("You have " + NumPlots + " purchased plots");
-}
-
-//Save Money as it is purchased
-function SaveMoneyAmmount(moneyAmount) {
-  localStorage.setItem("NumMoney", moneyAmount);
-  //console.log("You have $" + moneyAmount);
-}
-
-//Show Coop Buy Option
-function showCoopMenu() {
-  CoopExpansionWrapper.addClass("show");
-}
-//Hide Coop Buy Option
-function hideCoopMenu() {
-  CoopExpansionWrapper.removeClass("show");
-}
-
-//Trigger Coop Buy Option
-coopBuyOption.click(function() {
-  showCoopMenu();
-});
-
-//Buy The Coop
-coopBuyOptions.click(function() {
-  if ($(this).hasClass("yes")) {
-    buyTheCoop();
-    hideCoopMenu();
-  } else if ($(this).hasClass("no")) {
-    hideCoopMenu();
   } else {
+    MoneyBoxMessage.html("Not enough money. You need R" + PlotCost);
   }
 });
 
-function buyTheCoop() {
-  if (Money >= 10000) {
-    //Show the Coop
-    showTheCoop();
-    //Start the Counter
-    runTheCoop();
-    //Update Money Stuff
-    Money = Money - 10000;
-    SaveMoneyAmmount(Money);
+function addPlot() {
+  plotWrapper.append(spawnNewPlot);
+}
+
+//MAKE PLOT AVAILABLE
+function makePlotAvailable() {
+  $(".plotBox").each(function() {
+    //console.log("Checking plots!");
+    if (!$(this).hasClass("available")) {
+      if (!$(this).hasClass("ready")) {
+        if (!$(this).hasClass("seeded")) {
+          if (!$(this).hasClass("ready-to-harvest")) {
+            $(this).addClass("available ready");
+            $(this).find(".crop-info").html("Available");
+            //console.log("1 plot made available");
+            return false;
+          }
+        }
+      }
+    }
+  });
+}
+
+//PURCHASE COOP
+$("#purchaseCoop").click(function() {
+  if (Money >= 500) {
+    Money -= 500;
     MoneyBox.html(Money);
-    MoneyBoxMessage.html("- $" + 10000);
-    console.log("You Have Used: $10,000");
-    console.log("You now own the Coop!");
-    animateMoneyTooltip();
-    //Save Local Storage Boolean
-    localStorage.setItem("CoopPurchased", true);
+    hideCoopMenu();
     disableCoopPurchase();
+    MoneyBoxMessage.html("You purchased the Coop for R500");
+    localStorage.setItem("NumMoney", Money);
+    showTheCoop();
+    runTheCoop();
+    localStorage.setItem("CoopPurchased", "true");
   } else {
-    console.log("You DO NOT have enough money!");
-    BottomMessageUI.html("You DO NOT have enough money!");
-    animateBottomUITooltip();
+    MoneyBoxMessage.html("Not enough money. You need R500");
   }
-}
-
-function runTheCoop() {
-  setInterval(function() {
-    Money = Money + coopProfit;
-    MoneyBox.html(Money);
-    MoneyBoxMessage.html("+ $" + coopProfit);
-    console.log("You Have Made: " + coopProfit + " from the Coop");
-    animateMoneyTooltip();
-  }, 60 * 1000); // 60 * 1000 milsec
-}
+});
 
 function showTheCoop() {
-  Coop.addClass("show");
+  Coop.show();
+}
+
+function hideCoopMenu() {
+  CoopExpansionWrapper.hide();
 }
 
 function disableCoopPurchase() {
   coopBuyOption.hide();
 }
+
+//RUN THE COOP
+function runTheCoop() {
+  //console.log("coop running");
+  var Counter = 0;
+  var Timer = setInterval(function() {
+    Counter++;
+    if (Counter >= 60) {
+      //console.log("STOP TIMER");
+      clearInterval(Timer);
+      //console.log("TIMER STOPPED");
+      Money += coopProfit;
+      MoneyBox.html(Money);
+      MoneyBoxMessage.html("The chickens made you R" + coopProfit);
+      runTheCoop();
+      localStorage.setItem("NumMoney", Money);
+    }
+  }, 1000);
+}
+
+//Show and Hide the Crop Selection Menus
+function showSeedSelectionMenu() {
+  cropChooserWrapper.show();
+}
+
+function hideSeedSelectionMenu() {
+  cropChooserWrapper.hide();
+}
+
+function showConfirmMenu() {
+  ConfirmWrapper.show();
+}
+
+function hideConfirmMenu() {
+  ConfirmWrapper.hide();
+}
+
+function hideCoopMenu() {
+  CoopExpansionWrapper.hide();
+}
+
+//BUY CROPS
+//Buy Corn
+cropChooserOptions.click(function() {
+  var selectedSeedType = $(this).attr("data-seed-type");
+  var seedCost = checkCropCost(selectedSeedType);
+  if (Money >= seedCost) {
+    Money -= seedCost;
+    setUpSeed(currentPlot);
+    MoneyBox.html(Money);
+    MoneyBoxMessage.html(
+      "You planted " + selectedSeedType + " for R" + seedCost
+    );
+    currentPlot.addClass(selectedSeedType);
+    localStorage.setItem("NumMoney", Money);
+  } else {
+    MoneyBoxMessage.html("Not enough money. You need R" + seedCost);
+  }
+});

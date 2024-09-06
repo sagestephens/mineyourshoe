@@ -1,157 +1,142 @@
-// Game Sounds
-function playHarvestSound() {
-  var audio = document.getElementById("harvestSound");
+//GameSounds
+function playOrderConfirmedSound() {
+  var audio = document.getElementById("orderConfirmedSound");
   audio.play();
 }
 
-function playPlantSound() {
-  var audio = document.getElementById("plantSound");
+function playSpeedUpSound() {
+  var audio = document.getElementById("speedUpSound");
   audio.play();
 }
+
+//RESET LOCAL STORAGE
+$(document).on("click", "#resetAll", function() {
+  localStorage.clear();
+  console.log("All LocalStorage Items Cleared");
+});
 
 //Set Game Variables
-var NumShoes = 0; // The number of products/orders
-var Points = 1600; // The starting amount of points
-var PlotCost = 100; // Cost to speed up manufacturing
+var Money = 160; //initial money
+var Points = 0; //initial points
+var ProductCost = 500; //example cost of a product in points
+var ManufacturingTime = 4 * 7 * 24 * 60 * 60 * 1000; //4 weeks in milliseconds
+var SpeedUpCost1 = 500; //500 points to reduce time by 1 week
+var SpeedUpCost2 = 1000; //1000 points to reduce time by 2 weeks
 
-// Time Reduction
-var TimeReduction500Points = 1; // 1 week reduction for 500 points
-var TimeReduction1000Points = 2; // 2 weeks reduction for 1000 points
-
-// Time Constants
-var StandardManufacturingTime = 4; // weeks
-
-// Get DOM elements
-var productChooserWrapper = $("#productChooserWrapper");
-var productOptions = $("#productChooserWrapper > .footer > .product-type-option");
-var manufacturingWrapper = $("#manufacturingWrapper");
-var manufacturingSlot = $(".manufacturingSlot");
+//Get DOM elements
+var MoneyBox = $("#moneyBox");
 var PointsBox = $("#pointsBox");
-var PointsBoxMessage = $("#PointsBoxMessage");
+var OrderProgress = $("#orderProgress");
 var BottomMessageUI = $("#UIMessageWrapper");
 var ConfirmWrapper = $("#ConfirmWrapper");
 var ConfirmWrapperOptions = $("#ConfirmWrapper > .buttons > .button");
-var tutorialFloaty = $("#tutorialFloat");
-var ItemSelection = ".ItemSelection-selection";
 
-// Remove reset button
-
-
-// Set Points and Factory from storage
-var NumPlotsFromStorage = localStorage.getItem("NumPlots");
-if (NumPlotsFromStorage == null || NumPlotsFromStorage == "NaN") {
-  NumPlots = NumPlots;
+//Local Storage Setup
+//MONEY
+var MoneyFromStorage = localStorage.getItem("NumMoney");
+if (MoneyFromStorage == null || MoneyFromStorage == "NaN") {
+  Money = Money;
 } else {
-  NumPlots = parseInt(NumPlotsFromStorage);
+  Money = parseInt(MoneyFromStorage);
 }
-console.log("You have " + NumPlots + " purchased plots");
+$("#moneyBox").html(Money);
 
+//POINTS
 var PointsFromStorage = localStorage.getItem("NumPoints");
 if (PointsFromStorage == null || PointsFromStorage == "NaN") {
   Points = Points;
 } else {
   Points = parseInt(PointsFromStorage);
 }
-console.log("You have " + Points + " points");
-
 $("#pointsBox").html(Points);
 
-// Get Factory info
-var FactoryFromStorage = localStorage.getItem("FactoryPurchased");
-if (FactoryFromStorage == null || FactoryFromStorage == "NaN") {
-  console.log("You don't own the factory!");
-} else if (FactoryFromStorage == "true") {
-  showTheFactory();
-  runTheFactory();
-  disableFactoryPurchase();
-  console.log("You own the factory!");
-} else {
-  console.log("You don't own the factory!");
-}
-
-// Set HTML for product types
-productChooserWrapper.find(".corn").find(".cost").html("Cost: " + SeedCostT1 + " points");
-productChooserWrapper.find(".corn").find(".time").html("Time: " + counterLimitT1 + "s");
-productChooserWrapper.find(".corn").find(".profit").html("Profit: " + ProfitT1 + " points");
-
-productChooserWrapper.find(".blueberry").find(".cost").html("Cost: " + SeedCostT2 + " points");
-productChooserWrapper.find(".blueberry").find(".time").html("Time: " + counterLimitT2 + "s");
-productChooserWrapper.find(".blueberry").find(".profit").html("Profit: " + ProfitT2 + " points");
-
-productChooserWrapper.find(".watermelon").find(".cost").html("Cost: " + SeedCostT3 + " points");
-productChooserWrapper.find(".watermelon").find(".time").html("Time: " + counterLimitT3 + "s");
-productChooserWrapper.find(".watermelon").find(".profit").html("Profit: " + ProfitT3 + " points");
-
-// Create saved plots
-function spawnSavedPlots() {
-  var reqPlotsForSpawn = NumPlots;
-  if (reqPlotsForSpawn >= 1 && NumPlots <= 16) {
-    plot.remove();
-    tutorialFloaty.hide();
-    for (var i = 0; i < NumPlots; i++) {
-      plotWrapper.append(spawnSavedPlot);
-    }
-  }
-}
-spawnSavedPlots();
-makePlotAvailable();
-
-// Clicking on a plot
-$(document).on("click", ".plotBox", function(event) {
-  if ($(this).hasClass("available")) {
-    currentPlot = $(this);
-    hideConfirmMenu();
-    setTimeout(showConfirmMenu, 100);
-  } else if ($(this).hasClass("ready-to-harvest")) {
-    var cropType = checkCropType($(this));
-    harvestPlot($(this), cropType);
-  } else if ($(this).hasClass("ready")) {
-    hideSeedSelectionMenu();
-    setTimeout(function() {
-      showSeedSelectionMenu();
-      playPlantSound();
-    }, 100);
-    currentPlot = $(this);
-  }
-});
-
-// Purchase Factory
-coopBuyOption.click(function() {
-  showFactoryMenu();
-});
-
-function buyTheFactory() {
-  if (Points >= 10000) {
-    showTheFactory();
-    runTheFactory();
-    Points = Points - 10000;
+//PRODUCT SELECTION
+function selectProduct(product) {
+  if (Money >= ProductCost) {
+    Money -= ProductCost;
+    Points += calculatePoints(ProductCost);
+    SaveMoneyAmount(Money);
     SavePointsAmount(Points);
-    PointsBox.html(Points);
-    PointsBoxMessage.html("- 10,000 points");
-    animatePointsTooltip();
-    localStorage.setItem("FactoryPurchased", true);
-    disableFactoryPurchase();
+    $("#moneyBox").html(Money);
+    $("#pointsBox").html(Points);
+    startManufacturing(product);
   } else {
-    console.log("You don't have enough points!");
-    BottomMessageUI.html("You don't have enough points!");
+    BottomMessageUI.html("You DO NOT have enough money!");
     animateBottomUITooltip();
   }
 }
 
-function runTheFactory() {
-  setInterval(function() {
-    Points = Points + factoryProfit;
-    PointsBox.html(Points);
-    PointsBoxMessage.html("+ " + factoryProfit + " points");
-    animatePointsTooltip();
-  }, 60 * 1000);
+//START MANUFACTURING PROCESS
+function startManufacturing(product) {
+  playOrderConfirmedSound();
+  var timeRemaining = ManufacturingTime; // Set to 4 weeks initially
+  var interval = setInterval(function() {
+    timeRemaining -= 1000; // Reduce time every second
+    updateProgress(timeRemaining);
+    if (timeRemaining <= 0) {
+      clearInterval(interval);
+      completeOrder(product);
+    }
+  }, 1000);
 }
 
-function showTheFactory() {
-  Coop.addClass("show");
+//UPDATE PROGRESS BAR
+function updateProgress(timeRemaining) {
+  var percentage = 100 - (timeRemaining / ManufacturingTime) * 100;
+  OrderProgress.css("width", percentage + "%");
 }
 
-function disableFactoryPurchase() {
-  coopBuyOption.hide();
+//SPEED UP ORDER
+function speedUpOrder(weeks) {
+  if (weeks == 1 && Points >= SpeedUpCost1) {
+    Points -= SpeedUpCost1;
+    ManufacturingTime -= 1 * 7 * 24 * 60 * 60 * 1000; // Reduce by 1 week
+    playSpeedUpSound();
+  } else if (weeks == 2 && Points >= SpeedUpCost2) {
+    Points -= SpeedUpCost2;
+    ManufacturingTime -= 2 * 7 * 24 * 60 * 60 * 1000; // Reduce by 2 weeks
+    playSpeedUpSound();
+  } else {
+    BottomMessageUI.html("You DO NOT have enough points!");
+    animateBottomUITooltip();
+  }
+  SavePointsAmount(Points);
+  $("#pointsBox").html(Points);
 }
 
+//ORDER COMPLETION
+function completeOrder(product) {
+  BottomMessageUI.html("Your " + product + " is ready for collection!");
+  animateBottomUITooltip();
+}
+
+//CALCULATE POINTS BASED ON PURCHASE VALUE
+function calculatePoints(value) {
+  return value * 0.1; //1 point = 10c
+}
+
+//SAVE MONEY AMOUNT
+function SaveMoneyAmount(moneyAmount) {
+  localStorage.setItem("NumMoney", moneyAmount);
+}
+
+//SAVE POINTS AMOUNT
+function SavePointsAmount(pointsAmount) {
+  localStorage.setItem("NumPoints", pointsAmount);
+}
+
+//ANIMATE THE BOTTOM MESSAGE TIP
+function animateBottomUITooltip() {
+  BottomMessageUI.animate(
+    {
+      opacity: "1"
+    },
+    1000,
+    "linear",
+    function() {
+      BottomMessageUI.animate({
+        opacity: "0"
+      });
+    }
+  );
+}
